@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  caddy:
+    image: caddy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./site:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - php
+    networks:
+      - backend
+
+  php:
+    image: php:${PHP_VERSION}-fpm    # 使用环境变量选择PHP版本
+    volumes:
+      - ./site:/srv
+    networks:
+      - backend
+
+  mysql:
+    image: mysql:lastest
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: exampledb
+      MYSQL_USER: exampleuser
+      MYSQL_PASSWORD: examplepass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend
+
+  redis:
+    image: redis:alpine
+    networks:
+      - backend
+
+volumes:
+  caddy_data:
+  caddy_config:
+  mysql_data:
+
+networks:
+  backend:
+    driver: bridge
